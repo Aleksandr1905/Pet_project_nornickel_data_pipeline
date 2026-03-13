@@ -12,21 +12,49 @@ WITH hourly_data AS (
         max(CASE WHEN market_data.ticker = 'PLATINUM' THEN market_data.price END) as pt_usd
     FROM nornickel.market_data
     GROUP BY date_trunc('hour', market_data."timestamp")
+),
+filled_data AS (
+    SELECT
+        msk_hour,
+        gmkn,
+        COALESCE(usd,
+            LAG(usd, 1) OVER (ORDER BY msk_hour),
+            LAG(usd, 2) OVER (ORDER BY msk_hour),
+            LAG(usd, 3) OVER (ORDER BY msk_hour)
+        ) as usd,
+        COALESCE(ni_usd,
+            LAG(ni_usd, 1) OVER (ORDER BY msk_hour),
+            LAG(ni_usd, 2) OVER (ORDER BY msk_hour),
+            LAG(ni_usd, 3) OVER (ORDER BY msk_hour)
+        ) as ni_usd,
+        COALESCE(cu_usd,
+            LAG(cu_usd, 1) OVER (ORDER BY msk_hour),
+            LAG(cu_usd, 2) OVER (ORDER BY msk_hour),
+            LAG(cu_usd, 3) OVER (ORDER BY msk_hour)
+        ) as cu_usd,
+        COALESCE(pd_usd,
+            LAG(pd_usd, 1) OVER (ORDER BY msk_hour),
+            LAG(pd_usd, 2) OVER (ORDER BY msk_hour),
+            LAG(pd_usd, 3) OVER (ORDER BY msk_hour)
+        ) as pd_usd,
+        COALESCE(pt_usd,
+            LAG(pt_usd, 1) OVER (ORDER BY msk_hour),
+            LAG(pt_usd, 2) OVER (ORDER BY msk_hour),
+            LAG(pt_usd, 3) OVER (ORDER BY msk_hour)
+        ) as pt_usd
+    FROM hourly_data
 )
 SELECT
     msk_hour as msk_time,
     round(gmkn, 2) as real_price,
     round(
         (
-            COALESCE(pd_usd, LAG(pd_usd) OVER (ORDER BY msk_hour)) / 31.1 * 1000 * 0.40 +
-            COALESCE(pt_usd, LAG(pt_usd) OVER (ORDER BY msk_hour)) / 31.1 * 1000 * 0.10 +
-            COALESCE(ni_usd, LAG(ni_usd) OVER (ORDER BY msk_hour)) / 1000 * 0.25 +
-            COALESCE(cu_usd, LAG(cu_usd) OVER (ORDER BY msk_hour)) / 1000 * 0.20
-        ) * COALESCE(usd, LAG(usd) OVER (ORDER BY msk_hour)) / 14000,
+            pd_usd / 31.1 * 1000 * 0.40 +
+            pt_usd / 31.1 * 1000 * 0.10 +
+            ni_usd / 1000 * 0.25 +
+            cu_usd / 1000 * 0.20
+        ) * usd / 14000,
     2) as basket_price
-FROM hourly_data
-WHERE gmkn IS NOT NULL;
-
-COMMENT ON VIEW nornickel.v_global_basket IS
-'Корзина металлов: палладий (40%), платина (10%), никель (25%), медь (20%)
-Пересчет: унции → тонны (/31.1*1000), USD → RUB, деление на 14000 для масштаба';
+FROM filled_data
+WHERE gmkn IS NOT NULL
+ORDER BY msk_hour DESC;
