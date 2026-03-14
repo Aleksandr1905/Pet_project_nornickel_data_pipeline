@@ -20,27 +20,27 @@ filled_data AS (
         COALESCE(usd,
             LAG(usd, 1) OVER (ORDER BY msk_hour),
             LAG(usd, 2) OVER (ORDER BY msk_hour),
-            LAG(usd, 3) OVER (ORDER BY msk_hour)
+            LAG(usd, 48) OVER (ORDER BY msk_hour)
         ) as usd,
         COALESCE(ni_usd,
             LAG(ni_usd, 1) OVER (ORDER BY msk_hour),
             LAG(ni_usd, 2) OVER (ORDER BY msk_hour),
-            LAG(ni_usd, 3) OVER (ORDER BY msk_hour)
+            LAG(ni_usd, 48) OVER (ORDER BY msk_hour)
         ) as ni_usd,
         COALESCE(cu_usd,
             LAG(cu_usd, 1) OVER (ORDER BY msk_hour),
             LAG(cu_usd, 2) OVER (ORDER BY msk_hour),
-            LAG(cu_usd, 3) OVER (ORDER BY msk_hour)
+            LAG(cu_usd, 48) OVER (ORDER BY msk_hour)
         ) as cu_usd,
         COALESCE(pd_usd,
             LAG(pd_usd, 1) OVER (ORDER BY msk_hour),
             LAG(pd_usd, 2) OVER (ORDER BY msk_hour),
-            LAG(pd_usd, 3) OVER (ORDER BY msk_hour)
+            LAG(pd_usd, 48) OVER (ORDER BY msk_hour)
         ) as pd_usd,
         COALESCE(pt_usd,
             LAG(pt_usd, 1) OVER (ORDER BY msk_hour),
             LAG(pt_usd, 2) OVER (ORDER BY msk_hour),
-            LAG(pt_usd, 3) OVER (ORDER BY msk_hour)
+            LAG(pt_usd, 48) OVER (ORDER BY msk_hour)
         ) as pt_usd
     FROM hourly_data
 )
