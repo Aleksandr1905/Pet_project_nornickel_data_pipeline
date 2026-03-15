@@ -279,7 +279,7 @@
             },
             "showPoints": "auto",
             "showValues": false,
-            "spanNulls": false,
+            "spanNulls": true,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -655,7 +655,9 @@
           ],
           "displayMode": "table",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
         },
         "tooltip": {
           "hideZeros": false,
@@ -703,7 +705,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n  $__timeGroupAlias(\"timestamp\", 1h),\r\n  ROUND(\r\n    (\r\n      -- Драгметаллы с подстановкой последних известных значений\r\n      COALESCE(\r\n        AVG(CASE WHEN ticker = 'PALLADIUM' THEN price END),\r\n        (SELECT price FROM nornickel.market_data \r\n         WHERE ticker = 'PALLADIUM' AND timestamp <= $__timeTo() \r\n         ORDER BY timestamp DESC LIMIT 1)\r\n      ) / 31.1 * 1000 * 0.40 +\r\n      \r\n      COALESCE(\r\n        AVG(CASE WHEN ticker = 'PLATINUM' THEN price END),\r\n        (SELECT price FROM nornickel.market_data \r\n         WHERE ticker = 'PLATINUM' AND timestamp <= $__timeTo() \r\n         ORDER BY timestamp DESC LIMIT 1)\r\n      ) / 31.1 * 1000 * 0.10 +\r\n      \r\n      COALESCE(\r\n        AVG(CASE WHEN ticker = 'NICKEL' THEN price END),\r\n        (SELECT price FROM nornickel.market_data \r\n         WHERE ticker = 'NICKEL' AND timestamp <= $__timeTo() \r\n         ORDER BY timestamp DESC LIMIT 1)\r\n      ) / 1000 * 0.25 +\r\n      \r\n      COALESCE(\r\n        AVG(CASE WHEN ticker = 'COPPER' THEN price END),\r\n        (SELECT price FROM nornickel.market_data \r\n         WHERE ticker = 'COPPER' AND timestamp <= $__timeTo() \r\n         ORDER BY timestamp DESC LIMIT 1)\r\n      ) / 1000 * 0.20\r\n    ) * \r\n    COALESCE(\r\n      AVG(CASE WHEN ticker = 'USDRUB' THEN price END),\r\n      (SELECT price FROM nornickel.market_data \r\n       WHERE ticker = 'USDRUB' AND timestamp <= $__timeTo() \r\n       ORDER BY timestamp DESC LIMIT 1)\r\n    ) / 14000, \r\n  2) AS \"Корзина (Модель)\"\r\nFROM nornickel.market_data\r\nWHERE ticker IN ('PALLADIUM', 'PLATINUM', 'NICKEL', 'COPPER', 'USDRUB') \r\n  AND $__timeFilter(\"timestamp\")\r\nGROUP BY 1\r\nORDER BY 1",
+          "rawSql": "SELECT\r\n    $__timeGroupAlias(msk_time, '1h'),\r\n    basket_price as \"Корзина (Модель)\"\r\nFROM nornickel.v_global_basket\r\nWHERE $__timeFilter(msk_time)\r\nORDER BY 1",
           "refId": "B",
           "sql": {
             "columns": [
@@ -1008,13 +1010,13 @@
     "list": []
   },
   "time": {
-    "from": "now-30d",
+    "from": "now-7d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "New dashboard",
   "uid": "adx9whb",
-  "version": 17,
+  "version": 20,
   "weekStart": ""
 }
