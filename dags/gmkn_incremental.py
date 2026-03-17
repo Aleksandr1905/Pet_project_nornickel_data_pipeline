@@ -147,7 +147,7 @@ def sync_all_market_data(data_interval_start, data_interval_end, **kwargs):
 with DAG(
         'nornickel_increment_sync',
         default_args={'owner': 'airflow'},
-        schedule="*/10 * * * *",
+        schedule="*/30 * * * *",
         start_date=datetime(2026, 3, 10),
         max_active_runs=1,
         catchup=True
